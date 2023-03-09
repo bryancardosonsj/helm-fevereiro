@@ -35,16 +35,19 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            {{- toYaml.| nindent 12 }}
+          {{- end }}
+          {{- with .Values.readnessProbe }}
+          readnessProbe:
+            {{- toYaml.| nindent 12 }}
+          {{- end }}
+          envFrom:
+           - configMapRef:
+              name: {{ include "app-bryan.fullname" . }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
